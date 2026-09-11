@@ -39,7 +39,7 @@ Two publicly available facial image datasets were used:
 | Class | Source Dataset | Subjects | Image Format |
 |-------|---------------|----------|--------------|
 | **Normal** | AFLFP (Australian Facial Landmark and Facial Action Parameter) Database | 32 (selected from 113) | JPEG |
-| **Palsy** | YFP (Yorkshire Facial Paralysis) Dataset | 32 (all available) | BMP |
+| **Palsy** | YFP (Youtube Facial Palsy) Dataset | 32 (all available) | BMP |
 
 The balanced experimental subset comprises **64 subjects** (32 normal, 32 palsy) with a maximum of **64 images per subject**, yielding the two primary data representations:
 
