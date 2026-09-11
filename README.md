@@ -1,17 +1,17 @@
-# Facial Paralysis Screening via Subject-Independent Deep Learning: A Comparative Study of RGB and Facial Mesh Representations
+# Facial Paralysis Screening via Subject-Independent Deep Learning on MediaPipe Facial Mesh Representations
 
-A research-grade binary classification system for facial paralysis screening using convolutional neural networks (CNNs) with subject-independent evaluation. This repository implements a Leave-One-Subject-Out (LOSO) protocol to assess generalization to unseen subjects, comparing two image representations: original RGB facial photographs and MediaPipe facial mesh renderings.
+A research-grade binary classification system for facial paralysis screening using convolutional neural networks (CNNs) with subject-independent evaluation. This repository implements a Leave-One-Subject-Out (LOSO) protocol using MediaPipe facial mesh representations to assess generalization to unseen subjects.
 
 ---
 
 ## Overview
 
-Facial paralysis, commonly caused by conditions such as Bell's palsy, requires accurate clinical assessment for effective treatment planning. This project investigates whether structural facial geometry (captured via mesh landmarks) or appearance-based information (captured via original RGB images) provides more discriminative features for automated normal versus palsy classification.
+Facial paralysis, commonly caused by conditions such as Bell's palsy, requires accurate clinical assessment for effective treatment planning. This project investigates whether structural facial geometry, captured via MediaPipe facial mesh landmarks, provides discriminative features for automated normal versus palsy classification under a rigorous subject-independent evaluation protocol.
 
 **Key contributions:**
 
 - Subject-independent LOSO evaluation protocol across 64 subjects (64 folds), eliminating image-level data leakage.
-- Comparative analysis of two input representations: RGB photographs and MediaPipe facial mesh renderings.
+- MediaPipe facial mesh representation that encodes facial geometry while discarding appearance-specific confounds.
 - ResNet50-based classification pipeline with subject-level prediction aggregation and validation-derived threshold calibration.
 
 ---
@@ -67,7 +67,9 @@ All experiments use **ResNet50** pretrained on ImageNet (`IMAGENET1K_V2`) with t
 | Mixed precision | CUDA AMP (float16) |
 | Random seed | 456 |
 
-### Training Augmentation (RGB Only)
+### Training Augmentation
+
+Geometric augmentationation is applied during training:
 
 ```
 RandomHorizontalFlip(p=0.5)
@@ -98,7 +100,7 @@ All LOSO experiments are distributed across **4 × NVIDIA Tesla V100 32GB GPUs**
 
 ## Results
 
-### Mesh Representation (LOSO)
+### ResNet50 LOSO (Mesh Representation)
 
 | Metric | Value |
 |--------|-------|
@@ -124,44 +126,6 @@ All LOSO experiments are distributed across **4 × NVIDIA Tesla V100 32GB GPUs**
   <em>Figure 2. Mesh representation LOSO results. Left: Subject-level confusion matrix. Right: ROC curve (AUC = 0.9873).</em>
 </p>
 
-### RGB Representation (LOSO)
-
-| Metric | Value |
-|--------|-------|
-| Accuracy | 100.00% |
-| Precision | 100.00% |
-| Sensitivity | 100.00% |
-| Specificity | 100.00% |
-| F1 Score | 100.00% |
-| ROC-AUC | 1.0000 |
-
-**Confusion Matrix (Subject-Level):**
-
-| | Pred. Normal | Pred. Palsy |
-|---|:---:|:---:|
-| **Actual Normal** | 32 (TN) | 0 (FP) |
-| **Actual Palsy** | 0 (FN) | 32 (TP) |
-
-<p align="center">
-  <img src="results/rgb_loso/confusion_matrix.png" alt="RGB LOSO Confusion Matrix" width="350"/>
-  <img src="results/rgb_loso/roc_curve.png" alt="RGB LOSO ROC Curve" width="350"/>
-</p>
-<p align="center">
-  <em>Figure 3. RGB representation LOSO results. Left: Subject-level confusion matrix. Right: ROC curve (AUC = 1.0000).</em>
-</p>
-
-### Comparative Summary
-
-| Metric | Mesh (LOSO) | RGB (LOSO) |
-|--------|:-----------:|:----------:|
-| Accuracy | 90.62% | 100.00% |
-| Sensitivity | 84.38% | 100.00% |
-| Specificity | 96.88% | 100.00% |
-| F1 Score | 90.00% | 100.00% |
-| ROC-AUC | 0.9873 | 1.0000 |
-
-> **Important caveat:** The perfect RGB result warrants careful interpretation. The Normal and Palsy classes originate from different source datasets (AFLFP and YFP, respectively), introducing potential cross-dataset domain bias. The RGB model may exploit dataset-specific visual characteristics (e.g., background, illumination, camera, resolution, compression) rather than facial paralysis–specific features. The mesh representation, by discarding appearance information, may provide a more conservative but structurally grounded basis for classification. A thorough audit of potential confounds is recommended before drawing definitive conclusions.
-
 ---
 
 ## Repository Structure
@@ -186,7 +150,6 @@ FP-codebase-repo/
 │
 ├── # --- Training Scripts ---
 ├── loso_resnet50.py            # Mesh ResNet50 LOSO experiment (4-GPU)
-├── train_rgb_resnet50_loso.py  # RGB ResNet50 LOSO experiment (4-GPU)
 ├── train_resnet50.py           # Mesh ResNet50 fixed-holdout training (4-GPU DDP)
 │
 ├── # --- Sample Data (skeletal, for structure illustration only) ---
@@ -194,15 +157,13 @@ FP-codebase-repo/
 ├── Normal Set/Subjects/        # Normal RGB source (1 sample subject)
 ├── Palsy Set/                  # Palsy RGB source (1 sample subject)
 ├── dataset/normal/             # Normal mesh images (1 sample subject)
-├── Training_RGB/               # Curated RGB dataset (1 sample subject per class)
-├── Training/                   # Curated mesh dataset (empty class folders)
+├── Training/                   # Curated mesh dataset (sample class folders)
 │
 ├── # --- Figures and Results ---
 ├── figures/
 │   └── sample_comparison.png   # RGB vs. Mesh comparison figure
 └── results/
-    ├── mesh_loso/              # Mesh LOSO confusion matrix, ROC curve, summary
-    └── rgb_loso/               # RGB LOSO confusion matrix, ROC curve, config
+    └── mesh_loso/              # Mesh LOSO confusion matrix, ROC curve, summary
 ```
 
 ---
@@ -263,14 +224,11 @@ python prepare_training_dataset.py
 python arrange_rgb_dataset.py
 ```
 
-### 3. Run LOSO Experiments
+### 3. Run LOSO Experiment
 
 ```bash
 # Mesh ResNet50 LOSO (4 GPUs)
 torchrun --standalone --nproc_per_node=4 loso_resnet50.py
-
-# RGB ResNet50 LOSO (4 GPUs)
-torchrun --standalone --nproc_per_node=4 train_rgb_resnet50_loso.py
 ```
 
 ### 4. Monitor GPU Usage
@@ -297,7 +255,7 @@ If you use this code or findings in your research, please cite:
 
 ```bibtex
 @misc{facial_paralysis_classification_2025,
-  title   = {Facial Paralysis Screening via Subject-Independent Deep Learning: A Comparative Study of RGB and Facial Mesh Representations},
+  title   = {Facial Paralysis Screening via Subject-Independent Deep Learning on MediaPipe Facial Mesh Representations},
   author  = {[Author Names]},
   year    = {2025},
   note    = {Master's thesis, [Institution]}
