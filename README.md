@@ -273,6 +273,6 @@ This project is released for academic and research purposes.
 ## Acknowledgements
 
 - **AFLFP** — Australian Facial Landmark and Facial Action Parameter Database
-- **YFP** — Yorkshire Facial Paralysis Dataset
+- **YFP** — Youtube Facial Palsy Dataset
 - MediaPipe Face Mesh — Google MediaPipe team
 - PyTorch and Torchvision — Meta AI
