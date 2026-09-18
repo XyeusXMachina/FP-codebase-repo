@@ -126,6 +126,12 @@ All LOSO experiments are distributed across **4 × NVIDIA Tesla V100 32GB GPUs**
   <em>Figure 2. Mesh representation LOSO results. Left: Subject-level confusion matrix. Right: ROC curve (AUC = 0.9873).</em>
 </p>
 
+### Comparative Architecture Study
+
+A controlled comparative study evaluated three CNN architectures (ResNet50, MobileNetV2, EfficientNet-B0) under identical conditions. **MobileNetV2** achieved the best overall results: 96.90% image-level accuracy with only 2.2M parameters (10× fewer than ResNet50), while matching ResNet50's subject-level performance (97.14% accuracy, 1.0000 ROC-AUC).
+
+→ **[Full comparative study results](comparative_study/)**
+
 ---
 
 ## Repository Structure
@@ -151,6 +157,7 @@ FP-codebase-repo/
 ├── # --- Training Scripts ---
 ├── loso_resnet50.py            # Mesh ResNet50 LOSO experiment (4-GPU)
 ├── train_resnet50.py           # Mesh ResNet50 fixed-holdout training (4-GPU DDP)
+├── run_comparative_study.py    # Multi-architecture comparative pipeline
 │
 ├── # --- Sample Data (skeletal, for structure illustration only) ---
 ├── AFLFP/                      # Raw AFLFP source (1 sample subject)
@@ -162,8 +169,13 @@ FP-codebase-repo/
 ├── # --- Figures and Results ---
 ├── figures/
 │   └── sample_comparison.png   # RGB vs. Mesh comparison figure
-└── results/
-    └── mesh_loso/              # Mesh LOSO confusion matrix, ROC curve, summary
+├── results/
+│   └── mesh_loso/              # Mesh LOSO confusion matrix, ROC curve, summary
+│
+├── # --- Comparative Study ---
+└── comparative_study/
+    ├── README.md               # Multi-architecture comparison findings
+    └── figures/                # Comparison plots (bar charts, ROC, confusion matrices)
 ```
 
 ---
@@ -245,7 +257,7 @@ watch -n 1 nvidia-smi
 2. **Limited subject pool.** The balanced experiment uses 64 subjects; generalization to broader populations requires further validation.
 3. **Sample imbalance within subjects.** Some subjects contain fewer than 64 usable images, leading to variable per-subject sample sizes.
 4. **Threshold methodology.** Per-fold Youden J thresholds are used; a fixed global threshold may be more appropriate for deployment.
-5. **Single architecture.** Only ResNet50 is evaluated; other architectures (EfficientNet, DenseNet, ConvNeXt) may yield different results.
+5. **Single architecture (addressed).** The original study evaluated only ResNet50; a follow-up comparative study ([comparative_study/](comparative_study/)) now includes MobileNetV2 and EfficientNet-B0.
 
 ---
 
